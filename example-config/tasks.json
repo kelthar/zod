@@ -1,0 +1,21 @@
+// Global tasks, available in every project. Run with task::Spawn or the keybindings in keymap.json.
+[
+  {
+    "label": "Build .NET",
+    "command": "dotnet",
+    "args": ["build"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "allow_concurrent_runs": false,
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    // Runs the first ASP.NET (Microsoft.NET.Sdk.Web) project in the worktree.
+    "label": "Run .NET",
+    "command": "dotnet run --project \"$(grep -l 'Microsoft.NET.Sdk.Web' */*.csproj | head -n 1)\"",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "allow_concurrent_runs": false,
+    "use_new_terminal": false,
+    "reveal": "always"
+  }
+]

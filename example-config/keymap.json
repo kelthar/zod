@@ -1,0 +1,109 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-,": "project_symbols::Toggle",
+      "cmd-,": "project_symbols::Toggle",
+      "cmd-k": "workspace::ToggleRightDock",
+      // "shift shift": "file_finder::Toggle"
+    },
+  },
+  {
+    // Default binds cmd-, to zed::OpenSettings in this context; override it.
+    "context": "!SettingsWindow",
+    "bindings": {
+      "cmd-,": "project_symbols::Toggle",
+      "ctrl-,": "project_symbols::Toggle",
+    },
+  },
+  {
+    // F5 always opens the Run/Debug dialog; Ctrl+F5 reruns the last debug session.
+    // Excluded while debugging so F5 stays "Continue" when stopped at a breakpoint.
+    "context": "Workspace && !debugger_stopped && !debugger_running",
+    "bindings": {
+      "f5": "debugger::Start",
+      "ctrl-f5": "debugger::Rerun",
+    },
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "cmd--": "pane::GoBack",
+      "cmd-+": "pane::GoForward",
+      "cmd-=": "pane::GoForward",
+      "ctrl--": ["zed::DecreaseBufferFontSize", { "persist": false }],
+      "ctrl-+": ["zed::IncreaseBufferFontSize", { "persist": false }],
+      "ctrl-=": ["zed::IncreaseBufferFontSize", { "persist": false }],
+      "alt-left": "pane::GoBack",
+      "alt-right": "pane::GoForward",
+    },
+  },
+  {
+    // Editor binds alt-left/right to word movement, so override it here too.
+    "context": "Editor",
+    "bindings": {
+      "alt-left": "pane::GoBack",
+      "alt-right": "pane::GoForward",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      // "j k": "vim::NormalBefore"
+    },
+  },
+  {
+     // "Workspace || Editor" so ctrl-shift-b beats the default editor::SelectLeft binding in editors.
+     "context": "Workspace || Editor",
+     "bindings": {
+       "cmd-shift-b": [
+         "task::Spawn",
+         { "task_name": "Build .NET" }
+       ],
+       "ctrl-shift-b": [
+         "task::Spawn",
+         { "task_name": "Build .NET" }
+       ],
+       "cmd-shift-r": [
+         "task::Spawn",
+         { "task_name": "Run .NET" }
+       ]
+     }
+   },
+  {
+    "context": "Editor && showing_signature_help && !showing_completions",
+    "bindings": {
+      "up": "editor::MoveUp",
+      "down": "editor::MoveDown",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "alt-up": null,
+      "alt-down": null,
+    },
+  },
+  {
+    "context": "Editor && showing_signature_help",
+    "bindings": {
+      "alt-up": "editor::SignatureHelpPrevious",
+      "alt-down": "editor::SignatureHelpNext",
+    },
+  },
+  {
+    // Cycle Run / Debug / Attach / Launch tabs in the F5 "new process" modal.
+    "context": "RunModal > Editor && !showing_completions",
+    "bindings": {
+      "tab": "pane::ActivateNextItem",
+      "shift-tab": "pane::ActivatePreviousItem",
+    },
+  },
+]

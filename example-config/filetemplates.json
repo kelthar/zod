@@ -1,0 +1,48 @@
+// Templates for "New File from Template" (cmd-shift-a, or right-click a folder in the project panel).
+// Variables: ${namespace} (from the nearest .csproj + folders), ${filename} (name without extension).
+// Snippet tabstops/choices work as usual: $1, ${1:default}, ${1|a,b|}, $0.
+// A project-local .zed/filetemplates.json overrides templates with the same name.
+{
+  "C# Class": {
+    "extension": "cs",
+    "description": "New C# class (file-scoped namespace)",
+    "body": [
+      "namespace ${namespace};",
+      "",
+      "public ${1|class,sealed class,static class,abstract class|} ${filename}",
+      "{",
+      "    $0",
+      "}"
+    ]
+  },
+  "C# Interface": {
+    "extension": "cs",
+    "body": [
+      "namespace ${namespace};",
+      "",
+      "public interface ${filename}",
+      "{",
+      "    $0",
+      "}"
+    ]
+  },
+  "C# Record": {
+    "extension": "cs",
+    "body": [
+      "namespace ${namespace};",
+      "",
+      "public ${1|record,sealed record,record struct|} ${filename}($0);"
+    ]
+  },
+  "C# Enum": {
+    "extension": "cs",
+    "body": [
+      "namespace ${namespace};",
+      "",
+      "public enum ${filename}",
+      "{",
+      "    $0",
+      "}"
+    ]
+  }
+}
