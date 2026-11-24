@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# Builds a local Zod.app without Xcode: shaders are compiled at runtime instead of by the
+# Metal toolchain, and the bundle gets an ad-hoc signature, so it only runs on this machine.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+app_dir="${ZOD_APP_DIR:-$HOME/Applications}"
+app_path="$app_dir/Zod.app"
+version=$(cargo metadata --no-deps --format-version 1 | sed -n 's/.*"name":"zed","version":"\([^"]*\)".*/\1/p')
+
+cargo build --release -p zed --features gpui_platform/runtime_shaders
+
+staging=$(mktemp -d)
+trap 'rm -rf "$staging"' EXIT
+bundle="$staging/Zod.app"
+mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
+
+cp target/release/zod "$bundle/Contents/MacOS/zod"
+cp crates/zed/resources/Document.icns "$bundle/Contents/Resources/Document.icns"
+
+iconset="$staging/AppIcon.iconset"
+mkdir "$iconset"
+for size in 16 32 128 256 512; do
+    sips -z $size $size crates/zed/resources/app-icon-dev@2x.png --out "$iconset/icon_${size}x${size}.png" >/dev/null
+    sips -z $((size * 2)) $((size * 2)) crates/zed/resources/app-icon-dev@2x.png --out "$iconset/icon_${size}x${size}@2x.png" >/dev/null
+done
+iconutil -c icns "$iconset" -o "$bundle/Contents/Resources/AppIcon.icns"
+
+{
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>CFBundleDevelopmentRegion</key>
+<string>English</string>
+<key>CFBundleDisplayName</key>
+<string>Zod</string>
+<key>CFBundleExecutable</key>
+<string>zod</string>
+<key>CFBundleIconFile</key>
+<string>AppIcon</string>
+<key>CFBundleIdentifier</key>
+<string>dev.zed.Zed-Dev</string>
+<key>CFBundleInfoDictionaryVersion</key>
+<string>6.0</string>
+<key>CFBundleName</key>
+<string>Zod</string>
+<key>CFBundlePackageType</key>
+<string>APPL</string>
+<key>CFBundleShortVersionString</key>
+<string>$version</string>
+<key>CFBundleVersion</key>
+<string>$version</string>
+<key>LSApplicationCategoryType</key>
+<string>public.app-category.developer-tools</string>
+<key>LSMinimumSystemVersion</key>
+<string>12.0</string>
+<key>NSHighResolutionCapable</key>
+<true/>
+EOF
+    cat crates/zed/resources/info/*.plist
+    cat <<EOF
+</dict>
+</plist>
+EOF
+} > "$bundle/Contents/Info.plist"
+plutil -lint "$bundle/Contents/Info.plist" >/dev/null
+
+codesign --force --deep --sign - "$bundle"
+
+mkdir -p "$app_dir"
+rm -rf "$app_path"
+mv "$bundle" "$app_path"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$app_path"
+
+echo "Installed $app_path"
