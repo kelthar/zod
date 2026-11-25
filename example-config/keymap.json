@@ -16,6 +16,12 @@
     },
   },
   {
+    "context": "Workspace || (Editor && mode == full)",
+    "bindings": {
+      "ctrl-shift-a": "project_panel::NewFileFromTemplate",
+    },
+  },
+  {
     // Default binds cmd-, to zed::OpenSettings in this context; override it.
     "context": "!SettingsWindow",
     "bindings": {
