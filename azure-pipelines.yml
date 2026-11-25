@@ -9,7 +9,7 @@ trigger:
 pr: none
 
 pool:
-  name: zod-linux
+  vmImage: ubuntu-24.04
 
 variables:
   releaseTag: ''
@@ -24,7 +24,7 @@ jobs:
       - bash: |
           set -euo pipefail
           if [[ "$(uname -sm)" != 'Linux x86_64' ]]; then
-            echo 'The zod-linux pool must use a Linux x86-64 agent.' >&2
+            echo 'This build requires a Linux x86-64 agent.' >&2
             exit 1
           fi
           ./script/linux
