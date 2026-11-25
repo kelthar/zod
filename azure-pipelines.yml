@@ -59,7 +59,7 @@ jobs:
         displayName: Publish GitHub Release
         condition: and(succeeded(), ne(variables['releaseTag'], ''))
         inputs:
-          gitHubConnection: github-zod
+          gitHubConnection: kelthar
           repositoryName: kelthar/zod
           action: create
           target: $(Build.SourceVersion)
