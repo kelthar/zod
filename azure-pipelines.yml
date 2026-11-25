@@ -1,0 +1,70 @@
+trigger:
+  branches:
+    exclude:
+      - '*'
+  tags:
+    include:
+      - 'v*'
+
+pr: none
+
+pool:
+  name: zod-linux
+
+variables:
+  releaseTag: ''
+
+jobs:
+  - job: BuildLinux
+    displayName: Build and release Zod for Linux x86-64
+    timeoutInMinutes: 180
+    steps:
+      - checkout: self
+
+      - bash: |
+          set -euo pipefail
+          if [[ "$(uname -sm)" != 'Linux x86_64' ]]; then
+            echo 'The zod-linux pool must use a Linux x86-64 agent.' >&2
+            exit 1
+          fi
+          ./script/linux
+          sudo apt-get install -y clang-18 lld-18
+          ./script/download-wasi-sdk
+        displayName: Install build dependencies
+
+      - bash: |
+          set -euo pipefail
+          export PATH="$HOME/.cargo/bin:$PATH"
+          ./script/bundle-linux --skip-sentry
+          install -Dm644 target/release/zed-linux-x86_64.tar.gz \
+            "$BUILD_ARTIFACTSTAGINGDIRECTORY/zod-linux-x86_64.tar.gz"
+        displayName: Build and package Zod
+        env:
+          CC: clang-18
+          CXX: clang++-18
+          LLD: /usr/bin/ld.lld-18
+          CARGO_PROFILE_RELEASE_DEBUG: '0'
+          ZED_UPDATE_EXPLANATION: Download updates from https://github.com/kelthar/zod/releases.
+
+      - publish: $(Build.ArtifactStagingDirectory)/zod-linux-x86_64.tar.gz
+        artifact: zod-linux-x86_64
+
+      - bash: |
+          if [[ "$BUILD_SOURCEBRANCH" =~ ^refs/tags/(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            printf '##vso[task.setvariable variable=releaseTag;isReadOnly=true]%s\n' "${BASH_REMATCH[1]}"
+          fi
+        displayName: Identify release tag
+
+      - task: GitHubRelease@1
+        displayName: Publish GitHub Release
+        condition: and(succeeded(), ne(variables['releaseTag'], ''))
+        inputs:
+          gitHubConnection: github-zod
+          repositoryName: kelthar/zod
+          action: create
+          target: $(Build.SourceVersion)
+          tagSource: userSpecifiedTag
+          tag: $(releaseTag)
+          releaseNotesSource: inline
+          releaseNotesInline: Extract the Linux x86-64 archive and run `./zed-dev.app/bin/zed`.
+          assets: $(Build.ArtifactStagingDirectory)/zod-linux-x86_64.tar.gz
