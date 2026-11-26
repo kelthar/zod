@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> Remove this line to confirm you've reviewed this PR before submitting.
-
 Zod is a personal fork of [Zed](https://github.com/zed-industries/zed), the high-performance code editor
 by Zed Industries. The aim is to make Zed better suited for .NET / C# development, with a workflow closer
 to Visual Studio and Rider: run, debug and test .NET projects without hand-written `tasks.json` /
